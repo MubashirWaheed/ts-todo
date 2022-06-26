@@ -1,0 +1,21 @@
+body{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+main{
+    padding-top: 50px;
+}
+button{
+    background-color: rebeccapurple;
+    color: white;
+    box-shadow: none;
+    outline: none;
+    padding: 10px 15px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+button:active{
+    background-color: rgb(69, 33, 105);
+}
