@@ -17,15 +17,13 @@ interface Todo {
 } 
 
 // creating objects that are stored on the array
-type storeObject = (a: string) => void;
 const storeObject = (todo: string)=>{
-    const item: Todo = {
+    todos.push({
         id: uuidv4(),
         todo: todo,
         completed: false ,
-        createdDate: new Date,
-    }
-    todos.push(item)
+        createdDate: new Date(),
+    })
 }
 
 const renderTodos = ()=> {
@@ -77,7 +75,7 @@ const updateTodo = (id:string)=>{
 }
 
 addTaskBtn.addEventListener("click",(e)=>{
-    if(input.value == "") return 
+    if(input?.value == "") return 
     
     (e.target as HTMLElement).textContent == "Update" ?
         updateTodo(id) :
@@ -101,9 +99,15 @@ document.addEventListener("click", (e)=>{
         // populate input with the value 
         input.value = todo;
         addTaskBtn.textContent = "Update"
-    }else if((e.target as HTMLElement).classList.contains("deleteBtn")){
-        // deleting todo 
-        id = ((e.target as HTMLElement).parentNode.parentNode.childNodes[0].childNodes[0] as HTMLElement).id
+    }
+})
+
+
+document.addEventListener("click",(e)=>{
+    if((e.target as HTMLElement).classList.contains("deleteBtn")){
+        console.log(this)
+        // deleting todo
+        id = ((e.target as HTMLElement).parentNode.previousSibling.childNodes[0] as HTMLElement).id 
 
         let values = todos.filter((item)=>{
             if(item.id !== id) return item
@@ -112,7 +116,12 @@ document.addEventListener("click", (e)=>{
         todos = [...values]
         ul.innerHTML = ''
         renderTodos()
-    }else if (((e.target as HTMLElement).parentNode as HTMLElement).classList.contains("todo")){
+
+}})
+
+document.addEventListener("click",(e)=>{
+    // marking todo complet if checkox clicked
+    if (((e.target as HTMLElement).parentNode as HTMLElement).classList.contains("todo")){
         id = ((e.target as HTMLElement).parentNode.parentNode.childNodes[0].childNodes[0] as HTMLElement).id;
         let values;
         if(((e.target as HTMLElement).parentNode.childNodes[0] as HTMLInputElement).checked) {
@@ -136,6 +145,4 @@ document.addEventListener("click", (e)=>{
         todos = [...values]
         ul.innerHTML = ""
         renderTodos()
-    }
-})
-
+}})
