@@ -1,12 +1,13 @@
 import { v4 as uuidv4 } from 'uuid';
 
-const ul = document.querySelector("#todo")as HTMLUListElement
 const addTaskBtn = document.querySelector('#add-btn') as HTMLButtonElement
 const input = document.querySelector("#input") as HTMLInputElement
+const ul =  document.querySelector("#todoList") as  HTMLUListElement
+
 
 // array which stores the object 
 let todos:Array<Todo> = []
-let id: string;
+let updatingObject: Todo;
 
 interface Todo {
     id: string;
@@ -16,7 +17,7 @@ interface Todo {
     updatedDate?: Date;
 } 
 
-// creating objects that are stored on the array
+// creating objects that are stored in the array
 const storeObject = (todo: string)=>{
     todos.push({
         id: uuidv4(),
@@ -27,6 +28,7 @@ const storeObject = (todo: string)=>{
 }
 
 const renderTodos = ()=> {
+    // iterating over every object in array 
     todos.forEach((obj)=>{      
         const div = document.createElement("div");
         div.classList.add("item")
@@ -36,113 +38,96 @@ const renderTodos = ()=> {
 
         const checkbox = document.createElement("input")
         checkbox.type = "checkbox"
-        checkbox.id = `${obj.id}`
-        if(obj.completed) checkbox.checked = true
+        if(obj.completed === true) checkbox.checked = true
 
         const label = document.createElement("label") 
         label.textContent = obj.todo
         label.htmlFor = `${obj.id}`
+
+        checkbox.addEventListener("click",()=>{
+            todos = todos.map(item=>{
+                if(item.id == obj.id ){
+                    return {...obj,completed:!obj.completed}
+                }
+                return item
+            }) 
+            ul.innerText =""
+            renderTodos()
+        })
 
         const btns = document.createElement("div");
         
         const editBtn = document.createElement("button") as HTMLButtonElement
         editBtn.textContent = "Edit "
         editBtn.classList.add("editBtn")
+
+        editBtn.addEventListener("click",()=> updateTodo(obj))
         
         const deleteBtn = document.createElement("button") as HTMLButtonElement
         deleteBtn.textContent = "Delete"
         deleteBtn.classList.add("deleteBtn")
+        
+        deleteBtn.addEventListener("click",(e)=>{
+            // removing todo form array 
+            deleteTodo(obj)
+        })
 
         btns.appendChild(editBtn)
         btns.appendChild(deleteBtn)
-
+        
         li.appendChild(checkbox)
         li.appendChild(label)
-
+        
         div.appendChild(li);
         div.appendChild(btns);
-
+        
         ul.appendChild(div);
+    })
+    
+}
+
+const deleteTodo = (obj: Todo)=>{
+    //  removed from array
+    todos = todos.filter((item)=>{
+        if(item.id !== obj.id){
+            return item
+        }
+    })
+    ul.innerText =""
+    renderTodos()
+}
+
+const updateArray = (updatingObject:Todo)=>{
+    let newTodo:string  = input.value
+    todos = todos.map(item=>{
+        if(item.id === updatingObject.id){
+            return {...updatingObject,todo: newTodo}
+        }
+        return item
     })
 }
 
-const updateTodo = (id:string)=>{
-    //  Updating todo after finding todo using id 
-    todos.map((item)=>{
-        if(item.id == id) item.todo = input.value;
-        return 
-    })
+const updateTodo = (obj:Todo)=>{
+    input.value = obj.todo;
+    addTaskBtn.textContent = "Update"
+    updatingObject = obj
 }
 
 addTaskBtn.addEventListener("click",(e)=>{
-    if(input?.value == "") return 
     
-    (e.target as HTMLElement).textContent == "Update" ?
-        updateTodo(id) :
-        storeObject(input.value);
-    
-    input.value = ""
-    // dom should be cleared and painted according to new data in array 
-    ul.innerHTML = ""
-    addTaskBtn.textContent = "Add Task" 
+    if(input.value === "" || !(e.target instanceof HTMLElement) ) return 
 
-    renderTodos()
-});
-
-document.addEventListener("click", (e)=>{
-    // getting the clicked todo's id  
-    if((e.target as Element).classList.contains("editBtn")){
-        // Editing todo 
-        id = ((e.target as HTMLElement).parentNode.parentNode.childNodes[0].childNodes[0] as HTMLElement).id
-        let todo:string = ((e.target as HTMLElement).parentNode.parentNode.childNodes[0].childNodes[1] as HTMLElement).innerText
-
-        // populate input with the value 
-        input.value = todo;
-        addTaskBtn.textContent = "Update"
+    if(((e.target)as HTMLButtonElement).innerText == "Add Task"){
+        // push the todo in the array 
+        storeObject(input.value)
+        input.value = ""
+        ul.innerText = ""
+        renderTodos()
+    }else{
+        updateArray(updatingObject)
+        ul.innerText = ""
+        input.value = ""
+        addTaskBtn.innerText = "Add Task"
+        renderTodos()
     }
-})
-
-
-document.addEventListener("click",(e)=>{
-    if((e.target as HTMLElement).classList.contains("deleteBtn")){
-        console.log(this)
-        // deleting todo
-        id = ((e.target as HTMLElement).parentNode.previousSibling.childNodes[0] as HTMLElement).id 
-
-        let values = todos.filter((item)=>{
-            if(item.id !== id) return item
-        })
-        todos = []
-        todos = [...values]
-        ul.innerHTML = ''
-        renderTodos()
-
-}})
-
-document.addEventListener("click",(e)=>{
-    // marking todo complet if checkox clicked
-    if (((e.target as HTMLElement).parentNode as HTMLElement).classList.contains("todo")){
-        id = ((e.target as HTMLElement).parentNode.parentNode.childNodes[0].childNodes[0] as HTMLElement).id;
-        let values;
-        if(((e.target as HTMLElement).parentNode.childNodes[0] as HTMLInputElement).checked) {
-            values = todos.map((item)=>{
-                if(item.id == id) {
-                    item.completed = true
-                    return item 
-                }
-                return item 
-            })
-        }else{
-            values = todos.map((item)=>{
-                if(item.id == id) {
-                    item.completed = false
-                    return item 
-                }
-                return item 
-            })
-        }
-        todos = []
-        todos = [...values]
-        ul.innerHTML = ""
-        renderTodos()
-}})
+});
